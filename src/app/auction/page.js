@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import { ethers } from 'ethers';
 
-const IDENTITY_CONTRACT_ADDRESS = "0x0165878A594ca255338adfa4d48449f69242Eb8F";
-const AUCTION_CONTRACT_ADDRESS = "0xa513E6E4b8f2a923D98304ec87F64353C4D5C853";
+const IDENTITY_CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+const AUCTION_CONTRACT_ADDRESS = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
 
 import IdentityVerifierJSON from '../../../artifacts/contracts/Identity.sol/IdentityVerifier.json';
 import KYCGatedAuctionJSON from '../../../artifacts/contracts/KYCGatedAuction.sol/KYCGatedAuction.json';

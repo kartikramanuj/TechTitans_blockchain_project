@@ -4,6 +4,7 @@ const DocumentSchema = new mongoose.Schema({
   userAddress: { type: String, required: true, lowercase: true },
   cid: { type: String, required: true },
   cidHash: { type: String, required: true },
+  assignedVerifier: { type: String, lowercase: true }, // Added field
   status: { 
     type: String, 
     enum: ['pending', 'verified', 'rejected'], 
