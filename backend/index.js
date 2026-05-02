@@ -32,28 +32,16 @@ app.get('/api', (req, res) => {
   });
 });
 
-// Hardened CORS Configuration
-const allowedOrigins = [
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-  'https://tech-titans-blockchain-project.vercel.app',
-  'https://tech-titans-blockchain-project-qhsayu8k4.vercel.app',
-  process.env.PRODUCTION_DOMAIN
-].filter(Boolean);
-
+// Full CORS Implementation
 app.use(cors({
-  origin: function(origin, callback) {
-    if(!origin) return callback(null, true);
-    if(allowedOrigins.indexOf(origin) === -1) {
-      console.warn(`Origin blocked by CORS: ${origin}`);
-      return callback(new Error('CORS policy: This origin is not allowed access.'), false);
-    }
-    return callback(null, true);
-  },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  origin: true, // Dynamically allow any origin (required for Vercel preview subdomains)
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
 }));
+
+// Handle Preflight Requests
+app.options('*', cors());
 
 app.use(express.json());
 
