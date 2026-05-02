@@ -51,7 +51,8 @@ const getAbi = (json) => {
 const DEFAULT_ADMIN_ROLE = "0x0000000000000000000000000000000000000000000000000000000000000000";
 const VERIFIER_ROLE = "0x3affd601b6ab5005aff98cdc0cf176bb7d8e0423cb48e02217d35b042cec81e9"; // Correct VERIFIER_ROLE hash
 
-const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+const rawApiBase = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
+const API_BASE = rawApiBase.endsWith('/') ? rawApiBase.slice(0, -1) : rawApiBase;
 
 // --- Base Components ---
 const Card = ({ children, className = "", theme }) => (
