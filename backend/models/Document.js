@@ -1,18 +1,53 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
 
-const DocumentSchema = new mongoose.Schema({
-  userAddress: { type: String, required: true, lowercase: true },
-  cid: { type: String, required: true },
-  cidHash: { type: String, required: true },
-  assignedVerifier: { type: String, lowercase: true }, // Added field
-  status: { 
-    type: String, 
-    enum: ['pending', 'verified', 'rejected'], 
-    default: 'pending' 
+const Document = sequelize.define('Document', {
+  userAddress: {
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true,
+    set(value) {
+      this.setDataValue('userAddress', value.toLowerCase());
+    }
   },
-  uploadedAt: { type: Date, default: Date.now },
-  verifiedBy: { type: String, lowercase: true },
-  verifiedAt: { type: Date }
+  cid: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  cidHash: {
+    type: DataTypes.STRING,
+    allowNull: false
+  },
+  assignedVerifier: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    set(value) {
+      if (value) this.setDataValue('assignedVerifier', value.toLowerCase());
+    }
+  },
+  status: {
+    type: DataTypes.ENUM('pending', 'verified', 'rejected'),
+    defaultValue: 'pending'
+  },
+  uploadedAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
+  },
+  verifiedBy: {
+    type: DataTypes.STRING,
+    set(value) {
+      if (value) this.setDataValue('verifiedBy', value.toLowerCase());
+    }
+  },
+  verifiedAt: {
+    type: DataTypes.DATE
+  }
+}, {
+  timestamps: false,
+  indexes: [
+    { fields: ['status'] },
+    { fields: ['assignedVerifier'] }
+  ]
 });
 
-module.exports = mongoose.model('Document', DocumentSchema);
+module.exports = Document;

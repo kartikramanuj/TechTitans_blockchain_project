@@ -6,6 +6,8 @@ const FormData = require('form-data');
 const Document = require('../models/Document');
 const { authenticate, authorize } = require('../middleware/auth');
 const { ethers } = require('ethers');
+const { Op } = require('sequelize');
+const { unpinFromPinata } = require('../utils/pinata');
 
 const upload = multer({ storage: multer.memoryStorage() });
 
@@ -33,32 +35,36 @@ router.post('/upload', authenticate, authorize(['user', 'admin', 'verifier']), u
   try {
     const { userAddress } = req.body;
     const cid = await uploadToPinata(req.file.buffer, req.file.originalname);
-    const cidHash = ethers.id(cid);
-    const newDoc = await Document.findOneAndUpdate(
-      { userAddress: userAddress.toLowerCase() },
-      { cid, cidHash, status: 'pending', uploadedAt: new Date() },
-      { upsert: true, new: true }
-    );
-    res.status(201).json({ cid, cidHash });
+    
+    // Create or update the document record with CID. 
+    let [doc, created] = await Document.findOrCreate({
+      where: { userAddress: userAddress.toLowerCase() },
+      defaults: { 
+        cid, 
+        cidHash: 'pending', 
+        status: 'pending', 
+        uploadedAt: new Date() 
+      }
+    });
+
+    if (!created) {
+      await doc.update({ cid, status: 'pending', uploadedAt: new Date() });
+    }
+    
+    res.status(201).json({ cid });
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
-router.post('/assign', authenticate, async (req, res) => {
-  const { userAddress, assignedVerifier } = req.body;
-  try {
-    await Document.updateOne(
-      { userAddress: userAddress.toLowerCase() },
-      { assignedVerifier: assignedVerifier.toLowerCase() }
-    );
-    res.json({ success: true });
-  } catch (error) { res.status(500).json({ error: error.message }); }
-});
-
-// Allowed admin to see tasks as well
 router.get('/tasks', authenticate, authorize(['verifier', 'admin']), async (req, res) => {
   try {
-    // Show all that are not yet finalized (verified)
-    const docs = await Document.find({ status: { $ne: 'verified' } }).sort({ uploadedAt: -1 });
+    const docs = await Document.findAll({ 
+      where: { 
+        status: 'pending', // Only show pending documents that still have CIDs
+        assignedVerifier: { [Op.ne]: null },
+        cid: { [Op.ne]: null }
+      },
+      order: [['uploadedAt', 'DESC']]
+    });
     res.json(docs);
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
@@ -66,11 +72,14 @@ router.get('/tasks', authenticate, authorize(['verifier', 'admin']), async (req,
 router.post('/update-status', authenticate, authorize(['verifier', 'admin']), async (req, res) => {
   const { userAddress, status } = req.body;
   try {
-    await Document.updateOne(
-      { userAddress: userAddress.toLowerCase() },
-      { status, verifiedBy: req.user.address, verifiedAt: new Date() }
-    );
-    res.json({ success: true });
+    // Immediate deletion for security purposes
+    const doc = await Document.findOne({ where: { userAddress: userAddress.toLowerCase() } });
+    if (doc && doc.cid) {
+      await unpinFromPinata(doc.cid);
+      await doc.update({ cid: null }); // Clear immediately
+    }
+    
+    res.json({ success: true, message: "Document scheduled for deletion. Database will sync once block is confirmed." });
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 

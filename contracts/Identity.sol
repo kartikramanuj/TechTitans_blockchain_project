@@ -9,9 +9,10 @@ contract IdentityVerifier is AccessControl, ReentrancyGuard {
     bytes32 public constant VERIFIER_ROLE = keccak256("VERIFIER_ROLE");
 
     uint256 public constant MAX_REQUESTS = 4;
-    uint256 public constant VERIFICATION_FEE = 0.01 ether;
+    uint256 public constant VERIFICATION_FEE = 0.0001 ether;
     uint256 public constant VERIFICATION_WINDOW = 1 days;
-    uint256 public constant PENALTY = 0.005 ether;
+    uint256 public constant MIN_STAKE = 0.0005 ether;
+    uint256 public constant PENALTY = 0.00005 ether;
 
     enum Status { None, Pending, Verified, Revoked, Rejected }
 
@@ -37,6 +38,12 @@ contract IdentityVerifier is AccessControl, ReentrancyGuard {
 
     mapping(address => uint256) public pendingWithdrawals;
 
+    address[] public verifierList;
+    mapping(address => bool) private _isRegistered;
+
+    address[] public adminList;
+    mapping(address => bool) private _isAdminRegistered;
+
     event IdentitySubmitted(address indexed user, address verifier, uint256 deadline);
     event IdentityVerified(address indexed user, address verifier);
     event IdentityRejected(address indexed user, address verifier);
@@ -46,17 +53,52 @@ contract IdentityVerifier is AccessControl, ReentrancyGuard {
     event VerifierActivated(address verifier);
     event VerifierDeactivated(address verifier);
     event IdentityRevoked(address indexed user);
+    event AdminAdded(address indexed admin);
+    event AdminRemoved(address indexed admin);
 
     constructor() {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        adminList.push(msg.sender);
+        _isAdminRegistered[msg.sender] = true;
     }
 
-    function addVerifier(address v) external payable onlyRole(DEFAULT_ADMIN_ROLE) {
+    function addAdmin(address account) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        grantRole(DEFAULT_ADMIN_ROLE, account);
+        if (!_isAdminRegistered[account]) {
+            adminList.push(account);
+            _isAdminRegistered[account] = true;
+        }
+        emit AdminAdded(account);
+    }
+
+    function removeAdmin(address account) external onlyRole(DEFAULT_ADMIN_ROLE) {
+        require(account != msg.sender, "Cannot remove self");
+        revokeRole(DEFAULT_ADMIN_ROLE, account);
+        emit AdminRemoved(account);
+    }
+
+    function addVerifier(address v) external onlyRole(DEFAULT_ADMIN_ROLE) {
         require(v != address(0), "Invalid verifier");
-        require(msg.value >= PENALTY, "Stake required");
         grantRole(VERIFIER_ROLE, v);
-        stake[v] += msg.value;
-        if (stake[v] >= PENALTY) { _addActive(v); }
+        if (!_isRegistered[v]) {
+            verifierList.push(v);
+            _isRegistered[v] = true;
+        }
+    }
+
+    function getVerifierList() external view returns (address[] memory) {
+        return verifierList;
+    }
+
+    function getAdminList() external view returns (address[] memory) {
+        return adminList;
+    }
+
+    function activateVerifier() external payable onlyRole(VERIFIER_ROLE) {
+        require(msg.value == MIN_STAKE, "Must stake exactly 0.0005 ETH");
+        require(activeIndex[msg.sender] == 0, "Already active");
+        stake[msg.sender] += msg.value;
+        _addActive(msg.sender);
     }
 
     function removeVerifier(address v) external onlyRole(DEFAULT_ADMIN_ROLE) {
@@ -162,12 +204,30 @@ contract IdentityVerifier is AccessControl, ReentrancyGuard {
         Identity storage id = identities[user];
         require(id.status == Status.Pending, "Not pending");
         require(block.timestamp > id.deadline, "Still active");
-        id.settled = true;
-        id.status = Status.Revoked;
+        
         address v = id.assignedVerifier;
-        if (stake[v] >= PENALTY) { stake[v] -= PENALTY; } else { stake[v] = 0; }
+        id.settled = true;
+        id.status = Status.None; // Reset so they can retry
+        
+        // Slash verifier and calculate compensation
+        uint256 compensation = 0;
+        if (stake[v] >= PENALTY) {
+            stake[v] -= PENALTY;
+            compensation = PENALTY;
+        } else {
+            compensation = stake[v];
+            stake[v] = 0;
+        }
+        
         if (stake[v] < PENALTY) { _removeActive(v); }
-        pendingWithdrawals[user] += id.reward;
+        
+        // Refund fee + give compensation to the user
+        pendingWithdrawals[user] += (id.reward + compensation);
+        
+        // Reset counters so user isn't punished for verifier's failure
+        if (requestCount[user] > 0) requestCount[user]--;
+        usedHashes[id.identityHash] = false;
+
         emit IdentityExpired(user);
         emit VerifierPenalized(v);
     }
