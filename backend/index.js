@@ -36,19 +36,23 @@ app.get('/api', (req, res) => {
 const allowedOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:3000',
-  process.env.PRODUCTION_DOMAIN // e.g., https://secureid.app
+  'https://tech-titans-blockchain-project.vercel.app',
+  'https://tech-titans-blockchain-project-qhsayu8k4.vercel.app',
+  process.env.PRODUCTION_DOMAIN
 ].filter(Boolean);
 
 app.use(cors({
   origin: function(origin, callback) {
     if(!origin) return callback(null, true);
     if(allowedOrigins.indexOf(origin) === -1) {
+      console.warn(`Origin blocked by CORS: ${origin}`);
       return callback(new Error('CORS policy: This origin is not allowed access.'), false);
     }
     return callback(null, true);
   },
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
 }));
 
 app.use(express.json());
