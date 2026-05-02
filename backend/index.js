@@ -20,8 +20,8 @@ app.use(cors({
   credentials: true
 }));
 
-// ✅ 2. Handle preflight
-app.options('*', cors());
+// ✅ 2. Handle preflight (Express 5 fix: use (.*) instead of *)
+app.options('(.*)', cors());
 
 // ✅ 3. Body parser
 app.use(express.json());
