@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+
 const { sequelize, ensureDatabaseExists } = require('./config/database');
 const { listenToEvents } = require('./utils/blockchainListener');
 const { startReconciliationService } = require('./utils/reconciliation');
@@ -11,7 +12,21 @@ const kycRoutes = require('./routes/kyc');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Health Check Routes
+// ✅ 1. CORS MUST BE FIRST
+app.use(cors({
+  origin: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+
+// ✅ 2. Handle preflight
+app.options('*', cors());
+
+// ✅ 3. Body parser
+app.use(express.json());
+
+// ✅ 4. Health Routes (AFTER CORS)
 app.get('/', (req, res) => {
   res.json({
     status: 'OK',
@@ -32,30 +47,17 @@ app.get('/api', (req, res) => {
   });
 });
 
-// Full CORS Implementation
-app.use(cors({
-  origin: true, // Dynamically allow any origin (required for Vercel preview subdomains)
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true
-}));
-
-// Handle Preflight Requests
-app.options('*', cors());
-
-app.use(express.json());
-
-// Routes
+// ✅ 5. API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/kyc', kycRoutes);
 
-// MySQL Connection and Sync
+// Database + Server Start
 async function startServer() {
   try {
     await ensureDatabaseExists();
     await sequelize.authenticate();
     console.log('Database connected successfully.');
-    
+
     await sequelize.sync({ alter: true });
     console.log('Database synchronized.');
 
