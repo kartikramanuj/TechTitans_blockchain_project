@@ -26,6 +26,12 @@ app.get('/health', (req, res) => {
   });
 });
 
+app.get('/api', (req, res) => {
+  res.json({
+    message: 'API is working 🚀'
+  });
+});
+
 // Hardened CORS Configuration
 const allowedOrigins = [
   'http://localhost:3000',
