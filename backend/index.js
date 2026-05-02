@@ -11,6 +11,21 @@ const kycRoutes = require('./routes/kyc');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
+// Health Check Routes
+app.get('/', (req, res) => {
+  res.json({
+    status: 'OK',
+    message: 'Backend is live 🚀'
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({
+    status: 'UP',
+    database: 'connected'
+  });
+});
+
 // Hardened CORS Configuration
 const allowedOrigins = [
   'http://localhost:3000',
