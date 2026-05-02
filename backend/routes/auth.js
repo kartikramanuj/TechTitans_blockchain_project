@@ -25,10 +25,16 @@ router.post('/login', (req, res) => {
     }
 
     // 3. Issue the token
+    if (!process.env.JWT_SECRET) {
+      console.error("[Auth] CRITICAL: JWT_SECRET environment variable is not defined!");
+      return res.status(500).json({ error: 'Server configuration error: Missing JWT secret.' });
+    }
+
     const token = jwt.sign({ address: address.toLowerCase(), role }, process.env.JWT_SECRET, { expiresIn: '1d' });
     res.json({ token });
   } catch (error) {
-    res.status(500).json({ error: 'Authentication processing error.' });
+    console.error("[Auth] Login error details:", error);
+    res.status(500).json({ error: `Authentication processing error: ${error.message}` });
   }
 });
 
