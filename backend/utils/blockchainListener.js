@@ -1,7 +1,7 @@
 const { ethers } = require('ethers');
 const Document = require('../models/Document');
 const LastProcessedBlock = require('../config/LastProcessedBlock');
-const IdentityVerifierJSON = require('../../artifacts/contracts/Identity.sol/IdentityVerifier.json');
+const IdentityVerifierABI = require('../abi/IdentityVerifier.json');
 const { unpinFromPinata } = require('./pinata');
 
 const RPC_URL = process.env.RPC_URL || "http://127.0.0.1:8546";
@@ -10,7 +10,7 @@ const IDENTITY_CONTRACT_ADDRESS = process.env.IDENTITY_CONTRACT_ADDRESS;
 async function listenToEvents() {
   try {
     const provider = new ethers.JsonRpcProvider(RPC_URL);
-    const contract = new ethers.Contract(IDENTITY_CONTRACT_ADDRESS, IdentityVerifierJSON.abi, provider);
+    const contract = new ethers.Contract(IDENTITY_CONTRACT_ADDRESS, IdentityVerifierABI, provider);
 
     // 1. Get the last processed block from DB
     let lastBlockRecord = await LastProcessedBlock.findOne();

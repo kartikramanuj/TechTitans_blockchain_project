@@ -1,6 +1,6 @@
 const { ethers } = require('ethers');
 const Document = require('../models/Document');
-const IdentityVerifierJSON = require('../../artifacts/contracts/Identity.sol/IdentityVerifier.json');
+const IdentityVerifierABI = require('../abi/IdentityVerifier.json');
 
 const RPC_URL = process.env.RPC_URL || "http://127.0.0.1:8546";
 const IDENTITY_CONTRACT_ADDRESS = process.env.IDENTITY_CONTRACT_ADDRESS;
@@ -9,7 +9,7 @@ async function runReconciliation() {
   console.log("--- Starting State Reconciliation ---");
   try {
     const provider = new ethers.JsonRpcProvider(RPC_URL);
-    const contract = new ethers.Contract(IDENTITY_CONTRACT_ADDRESS, IdentityVerifierJSON.abi, provider);
+    const contract = new ethers.Contract(IDENTITY_CONTRACT_ADDRESS, IdentityVerifierABI, provider);
 
     // 1. Fetch all documents from DB that aren't verified yet
     const dbDocs = await Document.findAll({
