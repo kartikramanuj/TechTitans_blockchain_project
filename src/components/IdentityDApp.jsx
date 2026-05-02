@@ -33,8 +33,8 @@ import {
   Flame,
   Search
 } from 'lucide-react';
-import IdentityVerifierJSON from '../../artifacts/contracts/Identity.sol/IdentityVerifier.json';
-import KYCGatedAuctionJSON from '../../artifacts/contracts/KYCGatedAuction.sol/KYCGatedAuction.json';
+import IdentityVerifierJSON from '../abi/IdentityVerifier.json';
+import KYCGatedAuctionJSON from '../abi/KYCGatedAuction.json';
 
 // --- Constants ---
 const IDENTITY_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_IDENTITY_CONTRACT_ADDRESS;

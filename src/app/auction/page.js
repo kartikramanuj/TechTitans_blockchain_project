@@ -7,8 +7,8 @@ import { ethers } from 'ethers';
 const IDENTITY_CONTRACT_ADDRESS = "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82";
 const AUCTION_CONTRACT_ADDRESS = "0x9A676e781A523b5d0C0e43731313A708CB607508";
 
-import IdentityVerifierJSON from '../../../artifacts/contracts/Identity.sol/IdentityVerifier.json';
-import KYCGatedAuctionJSON from '../../../artifacts/contracts/KYCGatedAuction.sol/KYCGatedAuction.json';
+import IdentityVerifierJSON from '../../abi/IdentityVerifier.json';
+import KYCGatedAuctionJSON from '../../abi/KYCGatedAuction.json';
 
 const IDENTITY_ABI = IdentityVerifierJSON.abi;
 const AUCTION_ABI = KYCGatedAuctionJSON.abi;
