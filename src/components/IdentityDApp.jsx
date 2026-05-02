@@ -202,6 +202,16 @@ export default function IdentityDApp({ initialView = "user" }) {
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
         
+        // --- Validation: Ensure contract addresses are defined ---
+        if (!IDENTITY_CONTRACT_ADDRESS || !IDENTITY_CONTRACT_ADDRESS.startsWith('0x')) {
+          console.error("CRITICAL: IDENTITY_CONTRACT_ADDRESS is invalid:", IDENTITY_CONTRACT_ADDRESS);
+          throw new Error("PROTOCOL_ADDRESS_MISSING");
+        }
+        if (!AUCTION_CONTRACT_ADDRESS || !AUCTION_CONTRACT_ADDRESS.startsWith('0x')) {
+          console.error("CRITICAL: AUCTION_CONTRACT_ADDRESS is invalid:", AUCTION_CONTRACT_ADDRESS);
+          throw new Error("AUCTION_ADDRESS_MISSING");
+        }
+
         const identityAbi = getAbi(IdentityVerifierJSON);
         const auctionAbi = getAbi(KYCGatedAuctionJSON);
 
