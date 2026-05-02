@@ -95,7 +95,7 @@ contract IdentityVerifier is AccessControl, ReentrancyGuard {
     }
 
     function activateVerifier() external payable onlyRole(VERIFIER_ROLE) {
-        require(msg.value == MIN_STAKE, "Must stake exactly 0.0005 ETH");
+        require(msg.value >= MIN_STAKE, "Must stake at least 0.0005 ETH");
         require(activeIndex[msg.sender] == 0, "Already active");
         stake[msg.sender] += msg.value;
         _addActive(msg.sender);
