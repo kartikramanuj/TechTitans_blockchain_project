@@ -4,14 +4,18 @@ import React, { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar';
 import { ethers } from 'ethers';
 
-const IDENTITY_CONTRACT_ADDRESS = "0x0DCd1Bf9A1b36cE34237eEaFef220932846BCD82";
-const AUCTION_CONTRACT_ADDRESS = "0x9A676e781A523b5d0C0e43731313A708CB607508";
+const IDENTITY_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_IDENTITY_CONTRACT_ADDRESS || "0xc41673D7aA7aa715392b3d7b6E6Bf278a2016F3F";
+const AUCTION_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_AUCTION_CONTRACT_ADDRESS || "0x6648196239Bf2b448Ab150cDc61C28BF8768a9A1";
 
 import IdentityVerifierJSON from '../../abi/IdentityVerifier.json';
 import KYCGatedAuctionJSON from '../../abi/KYCGatedAuction.json';
 
-const IDENTITY_ABI = IdentityVerifierJSON.abi;
-const AUCTION_ABI = KYCGatedAuctionJSON.abi;
+// Helper to get ABI array safely
+const getAbi = (json) => {
+  if (Array.isArray(json)) return json;
+  if (json && json.abi && Array.isArray(json.abi)) return json.abi;
+  return null;
+};
 
 export default function AuctionPage() {
   const [walletAddress, setWalletAddress] = useState(null);
@@ -40,7 +44,9 @@ export default function AuctionPage() {
   const checkVerification = async (address) => {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
-      const identityContract = new ethers.Contract(IDENTITY_CONTRACT_ADDRESS, IDENTITY_ABI, provider);
+      const abi = getAbi(IdentityVerifierJSON);
+      if (!abi) return console.error("Identity ABI missing");
+      const identityContract = new ethers.Contract(IDENTITY_CONTRACT_ADDRESS, abi, provider);
       const verifiedStatus = await identityContract.isVerified(address);
       setIsVerified(verifiedStatus);
     } catch (err) {
@@ -51,7 +57,9 @@ export default function AuctionPage() {
   const fetchAuctionData = async () => {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
-      const auctionContract = new ethers.Contract(AUCTION_CONTRACT_ADDRESS, AUCTION_ABI, provider);
+      const abi = getAbi(KYCGatedAuctionJSON);
+      if (!abi) return console.error("Auction ABI missing");
+      const auctionContract = new ethers.Contract(AUCTION_CONTRACT_ADDRESS, abi, provider);
       
       const active = await auctionContract.auctionActive();
       setAuctionActive(active);
@@ -79,7 +87,9 @@ export default function AuctionPage() {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const signer = await provider.getSigner();
-      const auctionContract = new ethers.Contract(AUCTION_CONTRACT_ADDRESS, AUCTION_ABI, signer);
+      const abi = getAbi(KYCGatedAuctionJSON);
+      if (!abi) throw new Error("Auction ABI missing");
+      const auctionContract = new ethers.Contract(AUCTION_CONTRACT_ADDRESS, abi, signer);
       
       const tx = await auctionContract.placeBid({ value: ethers.parseEther(bidAmount) });
       await tx.wait(); 

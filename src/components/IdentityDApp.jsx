@@ -37,13 +37,19 @@ import IdentityVerifierJSON from '../abi/IdentityVerifier.json';
 import KYCGatedAuctionJSON from '../abi/KYCGatedAuction.json';
 
 // --- Constants ---
-const IDENTITY_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_IDENTITY_CONTRACT_ADDRESS;
-const AUCTION_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_AUCTION_CONTRACT_ADDRESS;
-const EXPECTED_CHAIN_ID = BigInt(process.env.NEXT_PUBLIC_EXPECTED_CHAIN_ID || "31338");
-const IDENTITY_ABI = IdentityVerifierJSON.abi;
-const AUCTION_ABI = KYCGatedAuctionJSON.abi;
+const IDENTITY_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_IDENTITY_CONTRACT_ADDRESS || "0xc41673D7aA7aa715392b3d7b6E6Bf278a2016F3F";
+const AUCTION_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_AUCTION_CONTRACT_ADDRESS || "0x6648196239Bf2b448Ab150cDc61C28BF8768a9A1";
+const EXPECTED_CHAIN_ID = BigInt(process.env.NEXT_PUBLIC_EXPECTED_CHAIN_ID || "11155111");
+
+// Helper to get ABI array safely
+const getAbi = (json) => {
+  if (Array.isArray(json)) return json;
+  if (json && json.abi && Array.isArray(json.abi)) return json.abi;
+  return null;
+};
+
 const DEFAULT_ADMIN_ROLE = "0x0000000000000000000000000000000000000000000000000000000000000000";
-const VERIFIER_ROLE = ethers.id("VERIFIER_ROLE");
+const VERIFIER_ROLE = "0x3affd601b6ab5005aff98cdc0cf176bb7d8e0423cb48e02217d35b042cec81e9"; // Correct VERIFIER_ROLE hash
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5001/api";
 
@@ -194,8 +200,16 @@ export default function IdentityDApp({ initialView = "user" }) {
 
         const signer = await provider.getSigner();
         const address = await signer.getAddress();
-        const _identityContract = new ethers.Contract(IDENTITY_CONTRACT_ADDRESS, IDENTITY_ABI, signer);
-        const _auctionContract = new ethers.Contract(AUCTION_CONTRACT_ADDRESS, AUCTION_ABI, signer);
+        
+        const identityAbi = getAbi(IdentityVerifierJSON);
+        const auctionAbi = getAbi(KYCGatedAuctionJSON);
+
+        if (!identityAbi || !auctionAbi) {
+          throw new Error("ABI_LOAD_FAILED");
+        }
+
+        const _identityContract = new ethers.Contract(IDENTITY_CONTRACT_ADDRESS, identityAbi, signer);
+        const _auctionContract = new ethers.Contract(AUCTION_CONTRACT_ADDRESS, auctionAbi, signer);
 
         // --- ATOMIC AUTHENTICATION ---
         // 1. Verify identity via signature BEFORE updating app state
