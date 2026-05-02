@@ -9,7 +9,7 @@ async function runReconciliation() {
   console.log("--- Starting State Reconciliation ---");
   try {
     const provider = new ethers.JsonRpcProvider(RPC_URL);
-    const contract = new ethers.Contract(IDENTITY_CONTRACT_ADDRESS, IdentityVerifierABI, provider);
+    const contract = new ethers.Contract(IDENTITY_CONTRACT_ADDRESS, IdentityVerifierABI.abi, provider);
 
     // 1. Fetch all documents from DB that aren't verified yet
     const dbDocs = await Document.findAll({

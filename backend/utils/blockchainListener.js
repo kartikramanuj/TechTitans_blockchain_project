@@ -10,7 +10,7 @@ const IDENTITY_CONTRACT_ADDRESS = process.env.IDENTITY_CONTRACT_ADDRESS;
 async function listenToEvents() {
   try {
     const provider = new ethers.JsonRpcProvider(RPC_URL);
-    const contract = new ethers.Contract(IDENTITY_CONTRACT_ADDRESS, IdentityVerifierABI, provider);
+    const contract = new ethers.Contract(IDENTITY_CONTRACT_ADDRESS, IdentityVerifierABI.abi, provider);
 
     // 1. Get the last processed block from DB
     let lastBlockRecord = await LastProcessedBlock.findOne();
