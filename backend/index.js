@@ -41,7 +41,12 @@ app.use(express.json());
 // ✅ 4. Health Routes
 app.get('/', (req, res) => res.json({ status: 'OK', message: 'Backend is live 🚀' }));
 app.get('/health', (req, res) => res.json({ status: 'UP', database: 'connected' }));
-
+app.get('/railway-test', (req, res) => {
+  res.json({
+    success: true,
+    message: 'LATEST CODE IS RUNNING'
+  });
+});
 // ✅ 5. API Routes
 // Mount routers
 app.use('/api/auth', authRoutes);
