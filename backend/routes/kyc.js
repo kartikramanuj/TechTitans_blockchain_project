@@ -162,6 +162,8 @@ router.post('/update-status', authenticate, authorize(['verifier', 'admin']), as
   } catch (error) { res.status(500).json({ error: error.message }); }
 });
 
+router.get('/ping', (req, res) => res.json({ status: 'kyc-router-alive' }));
+
 router.get('/activity', async (req, res) => {
   try {
     const activity = await Document.findAll({

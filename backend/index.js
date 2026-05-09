@@ -41,11 +41,34 @@ app.use(express.json());
 // ✅ 4. Health Routes
 app.get('/', (req, res) => res.json({ status: 'OK', message: 'Backend is live 🚀' }));
 app.get('/health', (req, res) => res.json({ status: 'UP', database: 'connected' }));
-app.get('/api', (req, res) => res.json({ message: 'API is working 🚀' }));
 
 // ✅ 5. API Routes
+// Mount routers
 app.use('/api/auth', authRoutes);
 app.use('/api/kyc', kycRoutes);
+
+// Generic /api route (for testing)
+app.get('/api', (req, res) => res.json({ 
+  message: 'API is working 🚀',
+  timestamp: new Date().toISOString()
+}));
+
+// ✅ 6. Global 404 Handler (Crucial for debugging Railway)
+app.use((req, res) => {
+  console.error(`[404] Not Found: ${req.method} ${req.url}`);
+  res.status(404).json({ 
+    error: 'Route not found', 
+    method: req.method, 
+    path: req.url,
+    hint: 'Check if the route is registered in index.js and the path is correct.'
+  });
+});
+
+// ✅ 7. Global Error Handler
+app.use((err, req, res, next) => {
+  console.error(`[Error] ${err.stack}`);
+  res.status(500).json({ error: 'Internal Server Error', message: err.message });
+});
 
 // Database + Server Start
 async function startServer() {
