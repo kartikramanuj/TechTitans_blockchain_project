@@ -75,10 +75,14 @@ export default function AuctionPage() {
   };
 
   useEffect(() => {
-    if (walletAddress) {
-      checkVerification(walletAddress);
-      fetchAuctionData();
-    }
+    const initData = async () => {
+      if (walletAddress) {
+        await checkVerification(walletAddress);
+        await fetchAuctionData();
+      }
+    };
+    initData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [walletAddress]);
 
   const placeBid = async () => {

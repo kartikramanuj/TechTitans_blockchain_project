@@ -4,7 +4,7 @@ const LastProcessedBlock = require('../config/LastProcessedBlock');
 const IdentityVerifierABI = require('../abi/IdentityVerifier.json');
 const { unpinFromPinata } = require('./pinata');
 
-const RPC_URL = process.env.RPC_URL || "http://127.0.0.1:8546";
+const RPC_URL = process.env.RPC_URL;
 const IDENTITY_CONTRACT_ADDRESS = process.env.IDENTITY_CONTRACT_ADDRESS;
 
 async function listenToEvents() {
@@ -15,89 +15,150 @@ async function listenToEvents() {
     // 1. Get the last processed block from DB
     let lastBlockRecord = await LastProcessedBlock.findOne();
     if (!lastBlockRecord) {
-      const currentBlock = await provider.getBlockNumber();
-      lastBlockRecord = await LastProcessedBlock.create({ blockNumber: currentBlock });
+      const currentBlockHeight = await provider.getBlockNumber();
+      lastBlockRecord = await LastProcessedBlock.create({ blockNumber: currentBlockHeight });
     }
 
-    const startBlock = lastBlockRecord.blockNumber + 1;
-    const latestBlock = await provider.getBlockNumber();
-    const endBlock = Math.min(startBlock + 9, latestBlock); // Limit to 10 blocks for Alchemy Free Tier
-    
-    console.log(`Scanning for missed events from block ${startBlock} to ${endBlock}...`);
+    // 2. Define Event Handlers
+    const processSubmitted = async (user, verifier, deadline) => {
+      console.log(`[Sync] Processing IdentitySubmitted | User: ${user} | Verifier: ${verifier}`);
+      try {
+        const [doc, created] = await Document.findOrCreate({
+          where: { userAddress: user.toLowerCase() },
+          defaults: {
+            cid: 'blockchain-sync',
+            cidHash: 'pending',
+            status: 'pending',
+            assignedVerifier: verifier.toLowerCase(),
+            uploadedAt: new Date()
+          }
+        });
 
-    // 2. Function to process an event
-    const processSubmitted = async (user, cidHash, verifier) => {
-      console.log(`Processing IdentitySubmitted | User: ${user}`);
-      const doc = await Document.findOne({ where: { userAddress: user.toLowerCase(), status: 'pending' } });
-      if (doc) {
-        await doc.update({ assignedVerifier: verifier.toLowerCase(), cidHash: cidHash.toString() });
+        const idData = await contract.getIdentity(user);
+        const onChainHash = idData[0];
+
+        const updates = { 
+          assignedVerifier: verifier.toLowerCase(), 
+          cidHash: onChainHash,
+          status: 'pending'
+        };
+
+        if (!doc.cid) {
+          updates.cid = 'blockchain-sync';
+        }
+
+        await doc.update(updates);
+        
+        console.log(`[Sync] Success for ${user} (Created: ${created})`);
+      } catch (err) {
+        console.error(`[Sync] Error for ${user}:`, err.message);
       }
     };
 
     const processVerified = async (user, verifier) => {
       console.log(`Processing IdentityVerified | User: ${user}`);
-      const doc = await Document.findOne({ where: { userAddress: user.toLowerCase() } });
-      if (doc && doc.cid) {
-        await unpinFromPinata(doc.cid);
-        await doc.update({ 
-          status: 'verified', 
-          verifiedBy: verifier.toLowerCase(), 
-          verifiedAt: new Date(),
-          cid: null // Remove CID for security
-        });
+      try {
+        const doc = await Document.findOne({ where: { userAddress: user.toLowerCase() } });
+        if (doc) {
+          if (doc.cid && doc.cid !== 'blockchain-sync') await unpinFromPinata(doc.cid);
+          await doc.update({ 
+            status: 'verified', 
+            verifiedBy: verifier.toLowerCase(), 
+            verifiedAt: new Date(),
+            cid: null 
+          });
+        }
+      } catch (err) {
+        console.error(`Error processing verification for ${user}:`, err);
       }
     };
 
     const processRejected = async (user, verifier) => {
       console.log(`Processing IdentityRejected | User: ${user}`);
-      const doc = await Document.findOne({ where: { userAddress: user.toLowerCase() } });
-      if (doc && doc.cid) {
-        await unpinFromPinata(doc.cid);
-        await doc.update({ 
-          status: 'rejected', 
-          verifiedBy: verifier.toLowerCase(), 
-          verifiedAt: new Date(),
-          cid: null // Remove CID for security
-        });
+      try {
+        const doc = await Document.findOne({ where: { userAddress: user.toLowerCase() } });
+        if (doc) {
+          if (doc.cid && doc.cid !== 'blockchain-sync') await unpinFromPinata(doc.cid);
+          await doc.update({ 
+            status: 'rejected', 
+            verifiedBy: verifier.toLowerCase(), 
+            verifiedAt: new Date(),
+            cid: null 
+          });
+        }
+      } catch (err) {
+        console.error(`Error processing rejection for ${user}:`, err);
       }
     };
 
-    // 3. Scan missed events (only if there are blocks to scan)
-    if (startBlock <= endBlock) {
-      const filterSubmitted = contract.filters.IdentitySubmitted();
-      const filterVerified = contract.filters.IdentityVerified();
-      const filterRejected = contract.filters.IdentityRejected();
+    // 3. Determine Scan Range
+    const currentChainBlock = await provider.getBlockNumber();
+    let startSyncBlock = lastBlockRecord.blockNumber;
+    
+    // Jump to current block if desync is too huge (public network safety)
+    if (currentChainBlock - startSyncBlock > 1000) {
+      console.warn(`[Sync] Large desync detected (${currentChainBlock - startSyncBlock} blocks). Resetting pointer.`);
+      startSyncBlock = currentChainBlock - 5; 
+    }
+    
+    // 4. Initial Missed Events Scan
+    if (startSyncBlock < currentChainBlock) {
+      const from = startSyncBlock + 1;
+      const to = currentChainBlock;
+      console.log(`[Sync] Scanning missed events from ${from} to ${to}...`);
+      
+      try {
+        const [subs, veds, rejs] = await Promise.all([
+          contract.queryFilter(contract.filters.IdentitySubmitted(), from, to),
+          contract.queryFilter(contract.filters.IdentityVerified(), from, to),
+          contract.queryFilter(contract.filters.IdentityRejected(), from, to)
+        ]);
 
-      const missedSubmitted = await contract.queryFilter(filterSubmitted, startBlock, endBlock);
-      for (const event of missedSubmitted) await processSubmitted(...event.args);
-
-      const missedVerified = await contract.queryFilter(filterVerified, startBlock, endBlock);
-      for (const event of missedVerified) await processVerified(...event.args);
-
-      const missedRejected = await contract.queryFilter(filterRejected, startBlock, endBlock);
-      for (const event of missedRejected) await processRejected(...event.args);
+        for (const e of subs) await processSubmitted(e.args[0], e.args[1], e.args[2]);
+        for (const e of veds) await processVerified(e.args[0], e.args[1]);
+        for (const e of rejs) await processRejected(e.args[0], e.args[1]);
+        
+        await lastBlockRecord.update({ blockNumber: to });
+      } catch (err) {
+        console.error("[Sync] Initial scan failed:", err.message);
+      }
     }
 
-    // 4. Update last processed block
-    await lastBlockRecord.update({ blockNumber: endBlock });
+    // 5. Real-time Polling Interval
+    console.log(`Real-time polling enabled on ${IDENTITY_CONTRACT_ADDRESS}...`);
 
-    // 5. Start Real-time Listening
-    console.log(`Real-time listening enabled on ${IDENTITY_CONTRACT_ADDRESS}...`);
+    setInterval(async () => {
+      try {
+        const latest = await provider.getBlockNumber();
+        let last = (await LastProcessedBlock.findOne()).blockNumber;
 
-    contract.on("IdentitySubmitted", async (user, cidHash, verifier, event) => {
-      await processSubmitted(user, cidHash, verifier);
-      await lastBlockRecord.update({ blockNumber: event.log.blockNumber });
-    });
+        // Reset if chain reset detected
+        if (latest < last) {
+          await lastBlockRecord.update({ blockNumber: latest });
+          last = latest;
+        }
 
-    contract.on("IdentityVerified", async (user, verifier, event) => {
-      await processVerified(user, verifier);
-      await lastBlockRecord.update({ blockNumber: event.log.blockNumber });
-    });
+        if (latest > last) {
+          const from = last + 1;
+          const to = latest;
+          const targetTo = Math.min(to, from + 100); // Smaller batches for polling
 
-    contract.on("IdentityRejected", async (user, verifier, event) => {
-      await processRejected(user, verifier);
-      await lastBlockRecord.update({ blockNumber: event.log.blockNumber });
-    });
+          const [subs, veds, rejs] = await Promise.all([
+            contract.queryFilter(contract.filters.IdentitySubmitted(), from, targetTo),
+            contract.queryFilter(contract.filters.IdentityVerified(), from, targetTo),
+            contract.queryFilter(contract.filters.IdentityRejected(), from, targetTo)
+          ]);
+
+          for (const e of subs) await processSubmitted(e.args[0], e.args[1], e.args[2]);
+          for (const e of veds) await processVerified(e.args[0], e.args[1]);
+          for (const e of rejs) await processRejected(e.args[0], e.args[1]);
+
+          await lastBlockRecord.update({ blockNumber: targetTo });
+        }
+      } catch (err) {
+        console.error("Polling error:", err.message);
+      }
+    }, 15000); 
 
   } catch (error) {
     console.error("Blockchain listener error:", error);

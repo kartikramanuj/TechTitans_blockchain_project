@@ -1,7 +1,8 @@
 import axios from "axios";
 
-const PINATA_API_KEY = "c0ca5f2f30c012ab37c7";
-const PINATA_SECRET_API_KEY = "d900dca7666f7d5eb443abc102b2ee1b32b5c093638fbc3a49e554562daef6be";
+const PINATA_JWT = process.env.NEXT_PUBLIC_PINATA_JWT;
+const PINATA_API_KEY = process.env.NEXT_PUBLIC_PINATA_API_KEY;
+const PINATA_SECRET_API_KEY = process.env.NEXT_PUBLIC_PINATA_SECRET_API_KEY;
 
 export const uploadFileToIPFS = async (file) => {
   const url = `https://api.pinata.cloud/pinning/pinFileToIPFS`;
@@ -11,35 +12,32 @@ export const uploadFileToIPFS = async (file) => {
 
   const metadata = JSON.stringify({
     name: "IdentityDocument",
-    keyvalues: {
-      project: "Web3Identity",
-    },
+    keyvalues: { project: "Web3Identity" },
   });
   data.append("pinataMetadata", metadata);
 
-  const options = JSON.stringify({
-    cidVersion: 0,
-  });
+  const options = JSON.stringify({ cidVersion: 0 });
   data.append("pinataOptions", options);
 
   try {
+    const headers = {
+      "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
+    };
+
+    if (PINATA_JWT) {
+      headers["Authorization"] = `Bearer ${PINATA_JWT}`;
+    } else {
+      headers["pinata_api_key"] = PINATA_API_KEY;
+      headers["pinata_secret_api_key"] = PINATA_SECRET_API_KEY;
+    }
+
     const res = await axios.post(url, data, {
       maxBodyLength: "Infinity",
-      headers: {
-        "Content-Type": `multipart/form-data; boundary=${data._boundary}`,
-        pinata_api_key: PINATA_API_KEY,
-        pinata_secret_api_key: PINATA_SECRET_API_KEY,
-      },
+      headers,
     });
-    return {
-      success: true,
-      ipfsHash: res.data.IpfsHash,
-    };
+    return { success: true, ipfsHash: res.data.IpfsHash };
   } catch (error) {
     console.error("Pinata upload error:", error);
-    return {
-      success: false,
-      message: error.message,
-    };
+    return { success: false, message: error.message };
   }
 };

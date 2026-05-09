@@ -12,11 +12,11 @@ const Document = sequelize.define('Document', {
   },
   cid: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true
   },
   cidHash: {
     type: DataTypes.STRING,
-    allowNull: false
+    allowNull: true
   },
   assignedVerifier: {
     type: DataTypes.STRING,
@@ -26,7 +26,7 @@ const Document = sequelize.define('Document', {
     }
   },
   status: {
-    type: DataTypes.ENUM('pending', 'verified', 'rejected'),
+    type: DataTypes.ENUM('none', 'pending', 'verified', 'revoked', 'rejected'),
     defaultValue: 'pending'
   },
   uploadedAt: {

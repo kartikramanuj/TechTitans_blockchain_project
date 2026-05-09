@@ -57,8 +57,8 @@ async function startServer() {
     await sequelize.sync({ alter: true });
     console.log('Database synchronized.');
 
-    app.listen(PORT, () => {
-      console.log(`Backend server running on port ${PORT}`);
+    app.listen(PORT, '0.0.0.0', () => {
+      console.log(`Backend server running on http://127.0.0.1:${PORT}`);
       listenToEvents();
       startReconciliationService();
     });
