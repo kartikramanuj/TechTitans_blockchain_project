@@ -10,7 +10,7 @@ const kycRoutes = require('./routes/kyc');
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// ✅ 1. BULLETPROOF MANUAL CORS (Works with Express 5 & Vercel)
+// BULLETPROOF MANUAL CORS (Works with Express 5 & Vercel)
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   
@@ -29,16 +29,16 @@ app.use((req, res, next) => {
   next();
 });
 
-// ✅ 2. Request Logger (For debugging Railway)
+// Request Logger (For debugging Railway)
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
   next();
 });
 
-// ✅ 3. Body parser
+// Body parser
 app.use(express.json());
 
-// ✅ 4. Health Routes
+// Health Routes
 app.get('/', (req, res) => res.json({ status: 'OK', message: 'Backend is live 🚀' }));
 app.get('/health', (req, res) => res.json({ status: 'UP', database: 'connected' }));
 app.get('/railway-test', (req, res) => {
@@ -47,7 +47,8 @@ app.get('/railway-test', (req, res) => {
     message: 'LATEST CODE IS RUNNING'
   });
 });
-// ✅ 5. API Routes
+
+// API Routes
 // Mount routers
 app.use('/api/auth', authRoutes);
 app.use('/api/kyc', kycRoutes);
@@ -58,7 +59,7 @@ app.get('/api', (req, res) => res.json({
   timestamp: new Date().toISOString()
 }));
 
-// ✅ 6. Global 404 Handler (Crucial for debugging Railway)
+// Global 404 Handler (Crucial for debugging Railway)
 app.use((req, res) => {
   console.error(`[404] Not Found: ${req.method} ${req.url}`);
   res.status(404).json({ 
@@ -69,7 +70,7 @@ app.use((req, res) => {
   });
 });
 
-// ✅ 7. Global Error Handler
+// Global Error Handler
 app.use((err, req, res, next) => {
   console.error(`[Error] ${err.stack}`);
   res.status(500).json({ error: 'Internal Server Error', message: err.message });
