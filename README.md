@@ -94,6 +94,17 @@ npx hardhat test
 
 ---
 
+## 📄 Documentation
+A comprehensive **Technical Project Report** is available in the `docs/` directory:
+- [Technical Project Report (PDF)](docs/Report_CS218.pdf)
+
+### Highlights from the Report:
+- **Low-Level EVM Analysis:** Detailed breakdown of opcodes and storage costs.
+- **Gas Optimization:** In-depth analysis of how we reduced costs for core functions (e.g., optimizing `submitIdentity` from 212k to 184k gas by moving CID storage off-chain).
+- **Security Model:** Verification state machine and slashing mechanism details.
+
+---
+
 ## 👥 Contributors
 - **Kartik Ramanuj** (240041030)
 - **Parl Vaghasiya** (240041037)
