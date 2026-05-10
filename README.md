@@ -15,7 +15,8 @@ This project implements a **Hybrid Storage Model** for decentralized KYC (Know Y
 
 ---
 
-## Architecture
+  
+##  Architecture
 
 The system consists of four primary layers:
 1.  **Smart Contract Layer:** Solidity contracts (`Identity.sol`, `KYCGatedAuction.sol`) deployed on Sepolia.
@@ -31,7 +32,7 @@ The system consists of four primary layers:
 - **Storage:** IPFS, Pinata
 - **Frontend:** Next.js, Tailwind CSS, Lucide React
 - **Backend:** Node.js, Express, MySQL, Sequelize
-- **Security:** OpenZeppelin (AccessControl, ReentrancyGuard)
+- **Security:** OpenZeppelin (AccessControl,ReentrancyGuard)
 
 ---
 
