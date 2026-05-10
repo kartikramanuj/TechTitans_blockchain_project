@@ -69,6 +69,8 @@ contract KYCGatedAuction {
     // 💰 Place bid (KYC REQUIRED 🔥)
     mapping(address => uint256) public pendingReturns;
 
+    /// @notice Places a bid in the auction. Requires KYC verification.
+    /// @dev Checks if the auction is active, verifies KYC via identityContract, and updates the highest bid.
     function placeBid() external payable {
         require(auctionActive, "Auction not active");
 

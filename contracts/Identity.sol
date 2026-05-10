@@ -149,6 +149,9 @@ contract IdentityVerifier is AccessControl, ReentrancyGuard {
         return v;
     }
 
+    /// @notice Submits a new identity for verification
+    /// @dev Assigns a verifier and stores the identity hash. Requires a verification fee.
+    /// @param hash The unique hash of the identity being submitted
     function submitIdentity(bytes32 hash) external payable {
         require(msg.value >= VERIFICATION_FEE, "Fee required");
         require(hash != bytes32(0), "Invalid hash");
