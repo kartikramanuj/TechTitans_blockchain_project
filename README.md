@@ -2,7 +2,7 @@
 
 A professional blockchain-based platform for secure identity management and regulated auction participation using Ethereum, IPFS, and a Node.js/MySQL backend.
 
-## 🚀 Overview
+## Overview
 
 This project implements a **Hybrid Storage Model** for decentralized KYC (Know Your Customer) verification. It ensures that sensitive identity documents remain private and off-chain (on IPFS) while providing cryptographic proofs and automated enforcement on the Ethereum blockchain.
 
@@ -15,7 +15,7 @@ This project implements a **Hybrid Storage Model** for decentralized KYC (Know Y
 
 ---
 
-## 🏗 Architecture
+## Architecture
 
 The system consists of four primary layers:
 1.  **Smart Contract Layer:** Solidity contracts (`Identity.sol`, `KYCGatedAuction.sol`) deployed on Sepolia.
@@ -25,7 +25,7 @@ The system consists of four primary layers:
 
 ---
 
-## 🛠 Tech Stack
+## Tech Stack
 
 - **Blockchain:** Ethereum (Sepolia Testnet), Hardhat, Ethers.js
 - **Storage:** IPFS, Pinata
@@ -35,7 +35,7 @@ The system consists of four primary layers:
 
 ---
 
-## 🚥 Getting Started
+## Getting Started
 
 ### 1. Prerequisites
 - Node.js (v18+)
@@ -71,7 +71,7 @@ npm run dev
 
 ---
 
-## 🧪 Testing and Gas Analysis
+## Testing and Gas Analysis
 
 The project includes a comprehensive test suite covering core identity and auction logic.
 
@@ -88,13 +88,13 @@ npx hardhat test
 
 ---
 
-## 📜 Smart Contract Addresses (Sepolia)
+## Smart Contract Addresses (Sepolia)
 - **Identity Verifier:** `0xCb6ac6401c473F6CD126eFfA8A8d860582CB265c`
 - **KYC-Gated Auction:** `0x72203506D428cd5BFa10f6F3FeF3BD0538D444B8`
 
 ---
 
-## 📄 Documentation
+## Documentation
 A comprehensive **Technical Project Report** is available in the `docs/` directory:
 - [Technical Project Report (PDF)](docs/Report_CS218.pdf)
 
@@ -105,7 +105,7 @@ A comprehensive **Technical Project Report** is available in the `docs/` directo
 
 ---
 
-## 👥 Contributors
+## Contributors
 - **Kartik Ramanuj** (240041030)
 - **Parl Vaghasiya** (240041037)
 - **Sana Tejasri** (240041033)
@@ -115,5 +115,5 @@ A comprehensive **Technical Project Report** is available in the `docs/` directo
 
 ---
 
-## 📄 License
+## License
 This project is licensed under the ISC License.
