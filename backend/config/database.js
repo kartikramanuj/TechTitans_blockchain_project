@@ -2,11 +2,11 @@ const { Sequelize } = require('sequelize');
 const mysql = require('mysql2/promise');
 
 const dbConfig = {
-  host: process.env.DB_HOST || '127.0.0.1',
-  user: process.env.DB_USER || 'root',
-  password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'blockchain_db',
-  port: process.env.DB_PORT || 3306
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: process.env.MYSQLPORT
 };
 
 async function ensureDatabaseExists() {
@@ -20,7 +20,7 @@ async function ensureDatabaseExists() {
     await connection.query(`CREATE DATABASE IF NOT EXISTS \`${dbConfig.database}\`;`);
     await connection.end();
   } catch (error) {
-    console.error('Error creating database:', error);
+    console.warn('Note: Database creation check skipped or failed. This is normal if using a managed database service.');
   }
 }
 
@@ -28,7 +28,10 @@ const sequelize = new Sequelize(dbConfig.database, dbConfig.user, dbConfig.passw
   host: dbConfig.host,
   dialect: 'mysql',
   port: dbConfig.port,
-  logging: false
+  logging: false,
+  dialectOptions: {
+    connectTimeout: 60000
+  }
 });
 
 module.exports = { sequelize, ensureDatabaseExists };
