@@ -81,11 +81,6 @@ NEXT_PUBLIC_IDENTITY_CONTRACT_ADDRESS=deployed_identity_contract_address
 NEXT_PUBLIC_AUCTION_CONTRACT_ADDRESS=deployed_auction_contract_address
 NEXT_PUBLIC_EXPECTED_CHAIN_ID=11155111
 NEXT_PUBLIC_API_BASE_URL=http://localhost:5001/api
-
-# Pinata Config (Frontend)
-NEXT_PUBLIC_PINATA_JWT=your_pinata_jwt
-NEXT_PUBLIC_PINATA_API_KEY=your_pinata_api_key
-NEXT_PUBLIC_PINATA_SECRET_API_KEY=your_pinata_secret_api_key
 ```
 
 #### Backend Environment (`backend/.env`)
