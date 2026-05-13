@@ -1,4 +1,4 @@
-# TechTitans Blockchain Project
+# Decentralized Identity Verification System
 
 This is a full-stack decentralized application for identity verification and KYC-gated auctions. The project consists of smart contracts, a Node.js backend for off-chain data and logic, and a Next.js frontend for user interaction.
 
@@ -176,3 +176,11 @@ npx hardhat test
 
 ## License
 This project is licensed under the MIT License.
+
+## Team members
+240041030 - Ramanuj Kartik
+240001077 - Vataliya suhani
+240041033 - sana Tejasri
+240041037 - vaghasiya parl
+240004001 - Aastha
+240021015 - Sakshya
