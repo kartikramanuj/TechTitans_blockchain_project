@@ -178,9 +178,9 @@ npx hardhat test
 This project is licensed under the MIT License.
 
 ## Team members
-240041030 - Ramanuj Kartik
-240001077 - Vataliya suhani
-240041033 - sana Tejasri
-240041037 - vaghasiya parl
-240004001 - Aastha
-240021015 - Sakshya
+- 240041030 - Ramanuj Kartik
+- 240001077 - Vataliya suhani
+- 240041033 - sana Tejasri
+- 240041037 - vaghasiya parl
+- 240004001 - Aastha
+- 240021015 - Sakshya
