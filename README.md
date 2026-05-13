@@ -1,78 +1,113 @@
-## Foundry
+# TechTitans Blockchain Project
 
-Foundry is a toolkit for Ethereum application development written in Rust. This repository implements the TechTitans Blockchain Project, focusing on decentralized identity verification and KYC-gated auctions.
+This is a full-stack decentralized application for identity verification and KYC-gated auctions. The project consists of smart contracts, a Node.js backend for off-chain data and logic, and a Next.js frontend for user interaction.
 
-## Project Description
+## Project Structure
 
-This project provides a secure environment for identity management and auction participation.
-- Identity Verifier: A contract system for submitting and verifying user identity hashes with verifier roles and staking mechanisms.
-- KYC Gated Auction: An auction platform that integrates with the identity verifier to ensure only verified participants can place bids.
+- /contracts: Smart contracts (Solidity).
+- /backend: Node.js Express server for identity management and blockchain synchronization.
+- /src: Next.js frontend application.
+- /test: Foundry and Hardhat test suites.
 
-## Architecture
+## System Components
 
-The project utilizes a dual-framework approach for maximum efficiency:
-- Foundry: Used for core contract development, high-speed testing, and gas analysis.
-- Hardhat: Used for deployment management, scripting, and ecosystem integration.
+### Smart Contracts
+- Identity Verifier: Manages verifier roles, staking, and identity hash verification.
+- KYC Gated Auction: Handles auction logic restricted to verified users.
+
+### Backend
+- Built with Node.js and Express.
+- Manages off-chain identity documents and interacts with Pinata for IPFS storage.
+- Synchronizes blockchain events with a local MySQL database via Sequelize.
+- Provides APIs for KYC submission and authentication.
+
+### Frontend
+- Built with Next.js and React.
+- Provides an administrative interface for verifiers and an auction portal for users.
+- Integrates with MetaMask for blockchain interactions.
 
 ## Installation
 
-Ensure you have Foundry installed. If not, follow the instructions at https://book.getfoundry.sh/getting-started/installation.
+### Prerequisites
+- Node.js (v18+)
+- Foundry (for smart contract testing)
+- MySQL (for backend database)
+
+### Global Setup
+Clone the repository and install dependencies for the root and backend:
 
 ```shell
 git clone https://github.com/Suhani-006/TechTitans_blockchain_project
 cd TechTitans_blockchain_project
-forge install
+
+# Install frontend and root dependencies
+npm install
+
+# Install backend dependencies
+cd backend
+npm install
+cd ..
 ```
 
-## Documentation
+## Configuration
 
-Comprehensive analysis of the contracts is available in the dedicated report file:
-- [Professional Gas and Coverage Report](./GAS_AND_COVERAGE_REPORT.md)
+### Backend
+Create a `.env` file in the `backend` directory using `.env.example` as a template. You will need:
+- Database credentials (MySQL).
+- Pinata API keys (for IPFS).
+- Ethereum RPC URL and Private Key.
 
-Detailed Foundry documentation is available at:
-- [Foundry Book](https://book.getfoundry.sh/)
+### Frontend
+Create a `.env` file in the root directory for Next.js environment variables.
 
 ## Usage
 
-### Build
-Compile the smart contracts:
+### Smart Contracts (Foundry)
+
+Compile contracts:
 ```shell
 forge build
 ```
 
-### Test
-Run the comprehensive test suite:
+Run tests:
 ```shell
 forge test
 ```
 
-### Gas Reporting
-Generate a detailed gas consumption report:
+Generate Gas Report:
 ```shell
 forge test --gas-report
 ```
 
-### Coverage
-Analyze testing coverage:
+For detailed contract metrics, see [GAS_AND_COVERAGE_REPORT.md](./GAS_AND_COVERAGE_REPORT.md).
+
+### Backend Server
+
+Start the backend:
 ```shell
-forge coverage --report summary
+cd backend
+npm start
 ```
 
-### Format
-Apply standard formatting:
+### Frontend Application
+
+Start the development server:
 ```shell
-forge fmt
+# From the root directory
+npm run dev
 ```
 
-### Anvil
-Start a local Ethereum node:
-```shell
-anvil
-```
+The application will be available at http://localhost:3000.
 
-### Help
-```shell
-forge --help
-anvil --help
-cast --help
-```
+## Documentation
+
+- [Smart Contract Gas and Coverage Report](./GAS_AND_COVERAGE_REPORT.md)
+- [Foundry Documentation](https://book.getfoundry.sh/)
+
+## Architecture
+
+The project employs a hybrid development strategy:
+- Foundry: High-performance contract testing and gas optimization.
+- Hardhat: Deployment scripts and ecosystem integration.
+- Next.js: Modern, responsive frontend.
+- Express/Sequelize: Robust backend and database management.
