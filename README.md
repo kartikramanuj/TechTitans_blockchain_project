@@ -115,7 +115,8 @@ PINATA_SECRET_API_KEY=your_pinata_secret_api_key
 
 ## Documentation
 
-For a comprehensive overview of the project, including detailed architectural diagrams, design choices, and full system analysis, please refer to the **[Full Project Report](./docs/Report.pdf)**.
+- **[Full Project Report](./docs/Report.pdf)**: Comprehensive overview of the project, architecture, and analysis.
+- **[Gas and Coverage Report](./GAS_AND_COVERAGE_REPORT.md)**: Detailed smart contract gas metrics and test coverage results.
 
 ---
 
