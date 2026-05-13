@@ -1,0 +1,60 @@
+  Smart Contract Test Coverage Report
+
+  1. Executive Summary
+   * Total Statement Coverage: 45.74%
+   * Total Branch Coverage: 26.85%
+   * Total Function Coverage: 51.85%
+   * Total Line Coverage: 48.15%
+   * Status: Partial Coverage. While core "happy paths" (verification and bidding) are tested, critical financial logic
+     like withdrawals and edge-case error handling currently lack verification.
+
+  2. Environment & Tools
+   * Framework: Hardhat v2.28.6
+   * Coverage Tool: solidity-coverage v0.8.17
+   * Compiler: Solidity 0.8.28 (Paris EVM target)
+   * Network: Hardhat Network (local)
+
+  3. Detailed Metrics by File
+  ┌─────────────────────┬────────────┬──────────┬───────────┬────────┐
+  │ File                │ Statements │ Branches │ Functions │ Lines  │
+  ├─────────────────────┼────────────┼──────────┼───────────┼────────┤
+  │ Identity.sol        │ 45.45%     │ 24.42%   │ 50.00%    │ 45.71% │
+  │ KYCGatedAuction.sol │ 47.06%     │ 36.36%   │ 57.14%    │ 56.67% │
+  └─────────────────────┴────────────┴──────────┴───────────┴────────┘
+
+  4. Coverage Gaps & Critical Risks
+  Based on the analysis of uncovered lines, the following critical logic is currently untested:
+
+  Identity.sol (Gaps: Lines 232, 234, 235)
+   * Withdrawal Logic: The withdraw() function, which handles transferring accumulated rewards/compensation to verifiers
+     and users, has not been executed in the test suite.
+   * Penalty/Expiry Logic: Logic related to IdentityExpired and VerifierPenalized events, specifically where
+     pendingWithdrawals are calculated during a penalty, is largely uncovered.
+   * Risk: Financial loss or "stuck" funds if the withdrawal transfer fails or calculations are incorrect.
+
+  KYCGatedAuction.sol (Gaps: Lines 100, 101, 104)
+   * Refund Logic: The mechanism for outbid users to reclaim their funds via the withdraw() function is untested.
+   * Reentrancy Protections: While using the Checks-Effects-Interactions pattern, the actual execution of the refund
+     transfer (and its failure state) hasn't been verified.
+   * Risk: Users might be unable to get their money back after being outbid.
+
+  5. Test Suite Analysis
+  Current Coverage Includes:
+   * Successful identity submission and verification.
+   * Starting an auction.
+   * Successful bidding by verified users.
+   * Verification that unverified users cannot bid.
+
+  Missing Test Scenarios :
+   * Negative Testing: Attempting to bid with insufficient funds or after the auction has ended.
+   * Financial Integrity: Testing the full lifecycle of funds—from bidding, being outbid, to successful withdrawal.
+   * Penalty Scenarios: Forcing a verifier timeout or failure to ensure penalties are correctly applied in Identity.sol.
+   * Edge Cases: Multiple bidders, bidding exactly the minimum increment, and auction finalization logic.
+
+  6. Future Improvements
+   1. Prioritize Withdrawals: Add test cases in test/IdentityAuction.js that simulate a withdrawal after an auction ends
+      or an identity is verified.
+   2. Increase Branch Coverage: Add tests that intentionally trigger require failures to ensure access control
+      (modifiers) works correctly across all functions.
+   3. Target 80%+ Coverage: For production-ready DeFi/Identity contracts, aim for at least 80% coverage, specifically
+      focusing on 100% coverage for functions handling ETH.
