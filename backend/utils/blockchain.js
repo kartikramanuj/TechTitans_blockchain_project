@@ -9,7 +9,7 @@ const ABI = [
   "function isVerified(address user) public view returns (bool)"
 ];
 
-const contract = new ethers.Contract(process.env.CONTRACT_ADDRESS, ABI, wallet);
+const contract = new ethers.Contract(process.env.IDENTITY_CONTRACT_ADDRESS, ABI, wallet);
 
 /**
  * Calls the smart contract to verify an identity on-chain

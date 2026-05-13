@@ -6,10 +6,10 @@ module.exports = {
   solidity: "0.8.28",
   networks: {
     localhost: {
-      url: "http://127.0.0.1:8546",
+      url: "http://127.0.0.1:8545",
     },
     hardhat: {
-      chainId: 31338,
+      chainId: 31337,
       accounts: {
         accountsBalance: "10000000000000000000000", // 10,000 ETH in wei
       },
@@ -26,6 +26,5 @@ module.exports = {
     enabled: true,
     currency: "USD",
     noColors: true,
-    outputFile: "gas-report.txt",
   },
 };
