@@ -37,9 +37,9 @@ import IdentityVerifierJSON from '../abi/IdentityVerifier.json';
 import KYCGatedAuctionJSON from '../abi/KYCGatedAuction.json';
 
 // --- Constants ---
-const IDENTITY_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_IDENTITY_CONTRACT_ADDRESS;
-const AUCTION_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_AUCTION_CONTRACT_ADDRESS;
-const EXPECTED_CHAIN_ID = BigInt(process.env.NEXT_PUBLIC_EXPECTED_CHAIN_ID || "0");
+const IDENTITY_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_IDENTITY_CONTRACT_ADDRESS || "0x39AA78081c04592Ad581ADC055146c3E5A77A3F5";
+const AUCTION_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_AUCTION_CONTRACT_ADDRESS || "0xe5d539F430bD3331221BE9b144baC9F202Ae1855";
+const EXPECTED_CHAIN_ID = BigInt(process.env.NEXT_PUBLIC_EXPECTED_CHAIN_ID || "11155111");
 
 const getAbi = (json) => {
   if (Array.isArray(json)) return json;
@@ -533,7 +533,7 @@ function UserDashboard({ contract, walletAddress, token, showMessage, ethBalance
       const data = await res.json();
       if (res.ok) {
         const cidHash = ethers.id(data.cid);
-        const tx = await contract.submitIdentity(cidHash, { value: ethers.parseEther("0.0001"), gasLimit: 500000 });
+        const tx = await contract.submitIdentity(cidHash, { value: ethers.parseEther("0.01"), gasLimit: 500000 });
         await tx.wait();
         showMessage('success', 'Identity confirmed on-chain.');
         setFile(null);
